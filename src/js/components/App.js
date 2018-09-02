@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import Header from './Header';
 import SignInForm from './SignInForm';
+import GamblePage from './GamblePage';
 
 import MemberService from '../services/MemberService';
 
@@ -13,14 +14,18 @@ class App extends Component {
     this.state = {
       signInForm: {
         show: true,
+        enteringCardOrEmail: true,
+        enteringPassword: false,
         memberIsSignedIn: false,
-        error: null
+        error: null,
       },
       member: {
         name: null,
         cardNumberOrEmail: null,
-        currentBalance: null
-      }
+        currentBalance: null,
+        isSignedIn: false
+      },
+      currentView: 'SignInForm' //SignInForm, GamblePage, WinningPage, LosingPage
     };
     this._checkMemberExists = this._checkMemberExists.bind(this);
     this._loginMember = this._loginMember.bind(this);
@@ -28,19 +33,47 @@ class App extends Component {
 
   _checkMemberExists(cardNumberOrEmail) {
     // API call (GET /member/api/v1/exists.json)
-    MemberService.checkMemberExists(cardNumberOrEmail).then( (result) => {
-      console.log('returning result!');
-      console.log(JSON.stringify(result));
-    });
-    //this.setState({ signInForm: signInFormState });
+    console.log('calling checkMemberExists in App.js');
 
+    let signInForm = this.state.signInForm;
+    signInForm.error = null;
+
+    MemberService.checkMemberExists(cardNumberOrEmail)
+    .then(result => {
+      if(result['status'] != 200) {
+        console.log("response.status != 200");
+        signInForm.error = result['message'];
+      }
+      else {
+        console.log('200 OK, everything\'s fine');
+        signInForm.enteringCardOrEmail = false;
+        signInForm.enteringPassword = true;
+      }
+      this.setState({ signInForm }); // so props error will not show in component
+      });
+    //this.setState({ signInForm: signInFormState });
   }
 
-  _loginMember() {
+  _loginMember(memberPassword) {
+    let signInForm = this.state.signInForm;
 
+    MemberService.loginMember(memberPassword)
+      .then(result => {
+        console.log("login result => " + JSON.stringify(result))
+        if(result['status'] !== 200) {
+          console.log('login unsuccessful')
+          signInForm.error = result['message']
+        }
+        else {
+          console.log("sign-in success")
+          this.setState({ currentView: 'GamblePage' });
+        }
+      })
   }
 
   render() {
+    let signInForm = this.state.signInForm;
+    let member = this.state.member;
     return (
       <React.Fragment>
         <Header
@@ -51,11 +84,17 @@ class App extends Component {
           <div class='row align-items-center'>
             <div class='col-10 offset-1 col-sm-8 offset-sm-2 col-md-6 offset-md-3'>
               <SignInForm
-                isShowing={this.state.signInForm.show}
+                isShowing={this.state.currentView === 'SignInForm'}
+                isEnteringCardOrEmail={signInForm.enteringCardOrEmail}
+                isEnteringPassword={signInForm.enteringPassword}
                 cardNumberOrEmail={this.state.member.cardNumberOrEmail}
                 checkMemberExists={this._checkMemberExists}
                 loginMember={this._loginMember}
-                error={this.state.signInForm.error}
+                error={signInForm.error}
+              />
+              <GamblePage
+                isShowing={this.state.currentView === 'GamblePage' && member.currentBalance}
+                currentBalance={member.currentBalance}
               />
             </div>
           </div>

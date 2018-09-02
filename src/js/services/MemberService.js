@@ -1,32 +1,33 @@
-import axios from 'axios';
+import ENV from './env';
 
 let MemberService = {
-  // TODO: put these in shared ENV
-  apiBaseUrl: 'http://localhost:5000/api/v1/',
-
-  privateApiKey: '0101-1122-3344-5566',
 
   checkMemberExists: (cardNumberOrEmail) => {
     console.log("calling checkMemberExists");
 
-    let requestUrl = `${this.apiBaseUrl}/member/exists`;
-    let requestData = {
-      private_api_key: this.privateApiKey,
-      card_number_or_email: cardNumberOrEmail
-    };
+    let requestUrl = `${ENV.apiBaseUrl}/member/exists.json?&private_api_key=${ENV.privateApiKey}&card_number_or_email=${cardNumberOrEmail}`;
 
-    axios({
-      method: 'get',
-      url: requestUrl,
-      data: requestData
-    })
-    .then((response) => {
-      console.log('received response! => ' + JSON.stringify(response));
-      return {
-        message: response.data['message'],
-        status: response.status
-      };
-    })
+    // will be used to get around only being able to return json from first promise
+    // each response attribute can only be read once - hence the need for a clone
+    let responseClone;
+
+    return(
+      fetch(requestUrl, {
+        method: "GET"
+      })
+      .then(response => {
+        responseClone = response.clone();
+        return response.json();
+      })
+      .then(responseJson => {
+        console.log('responseJson => ' + JSON.stringify(responseJson));
+        return { message: responseJson['message'], status: responseClone.status };
+      })
+      .catch(error => {
+        console.log('there was an error! =>' + error);
+        console.log(JSON.stringify(error));
+      })
+    );
   }
 }
 
