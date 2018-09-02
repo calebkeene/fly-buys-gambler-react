@@ -7,9 +7,7 @@ class SignInInput extends React.Component {
   }
 
   _updateCurrentInputValue(event) {
-    console.log("calling _updateCurrentInputValue");
     let currentInput = event.target.value;
-    console.log('currentInput => ' + currentInput);
     this.props.updateCurrentInputValue(currentInput);
   }
   render(){
@@ -26,6 +24,7 @@ class SignInInput extends React.Component {
           placeholder={formInputPlaceholder}
           value={value}
           onChange={this._updateCurrentInputValue}
+          id='sign-in-input'
         />
       )
     }
@@ -39,7 +38,7 @@ class SignInInput extends React.Component {
           placeholder={formInputPlaceholder}
           value={value}
           onChange={this._updateCurrentInputValue}
-          id='member-password'
+          id='sign-in-input'
         />
       )
     }

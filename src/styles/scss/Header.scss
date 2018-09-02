@@ -1,0 +1,16 @@
+.header {
+  .navbar {
+    &-brand {
+      padding: 0;
+      img.header__left {
+        max-height: 3.125rem;
+      }
+    }
+    .form-inline {
+      div.member-name {
+        padding-top: 0.3125rem;
+        font-style: italic;
+      }
+    }
+  }
+}

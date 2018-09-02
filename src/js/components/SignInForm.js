@@ -2,7 +2,6 @@ import React from 'react';
 import SignInInput from './SignInInput';
 import AlertPanel from './AlertPanel';
 import '../../styles/css/Buttons.css';
-import '../../styles/css/SignInForm.css';
 
 class SignInForm extends React.Component {
   constructor(props) {
@@ -34,21 +33,16 @@ class SignInForm extends React.Component {
 
   // only used when entering card number or email
   _checkInputIsValid(cardNumberOrEmail) {
-    console.log("checking input valid")
     let input = cardNumberOrEmail;
-    //let previousApiCallMade;
     let error = null;
 
     let validEmail = this._validEmailRegxp().test(input.toLowerCase());
     let validCardNumber = this._validFlyBuysCardRegxp().test(input);
 
     if (validEmail || validCardNumber) {
-      console.log("valid Email or valid Card")
-      // showLocalError this will be set true when they click next again
       this.setState({ error, showLocalError: false });
     }
     else {
-      console.log("error remains")
       error = 'Invalid email address or card number';
       this.setState({ error });
     }
@@ -56,40 +50,32 @@ class SignInForm extends React.Component {
   }
 
   _updateCurrentInputValue(currentInput) {
-    console.log("updating current input value, currentInput => " + currentInput);
     let showApiError = false;
     if(this.props.isEnteringCardOrEmail) {
       let cardNumberOrEmail = currentInput;
       this.setState({ cardNumberOrEmail, showApiError });
-
-      //if(this.state.previousApiCallMade || this.state.error !== null) {
-        // give quick user feedback if they've already failed with the format
       this._checkInputIsValid(cardNumberOrEmail);
-      //}
     }
-    else { //password)
+    else { //password
       let memberPassword = currentInput; // TODO: encrypt this before saving
       this.setState({ memberPassword, showApiError });
     }
-
   }
 
   _handleNextButtonClick() {
     let showLocalError = true;
     let showApiError = true;
+    let cardNumberOrEmail = this.state.cardNumberOrEmail;
 
     if (this.props.isEnteringCardOrEmail) {
-      let cardNumberOrEmail = this.state.cardNumberOrEmail;
-
       if (this._checkInputIsValid(cardNumberOrEmail)) {
         this.props.checkMemberExists(cardNumberOrEmail);
       }
     }
     else if (this.props.isEnteringPassword) { // entering password
       showLocalError = false;
-
       let memberPassword = this.state.memberPassword;
-      this.props.loginMember(memberPassword);
+      this.props.signInMember(memberPassword, cardNumberOrEmail);
     }
     this.setState({ showLocalError, showApiError });
   }
@@ -100,8 +86,8 @@ class SignInForm extends React.Component {
       if (this.state.showLocalError || this.state.showApiError) {
         error = (this.props.error && this.state.showApiError) ? this.props.error : this.state.error;
       }
-      let SignInInputValue = this.props.isEnteringCardOrEmail ? this.state.cardNumberOrEmail : this.state.memberPassword;
 
+      let signInInputValue = this.props.isEnteringCardOrEmail ? this.state.cardNumberOrEmail : this.state.memberPassword;
       return (
         <React.Fragment>
           <div class='sign-in-form'>
@@ -111,7 +97,7 @@ class SignInForm extends React.Component {
             <div class='row'>
               <SignInInput
                 isEnteringCardOrEmail={this.props.isEnteringCardOrEmail}
-                currentInput={SignInInputValue}
+                currentInput={signInInputValue}
                 updateCurrentInputValue={this._updateCurrentInputValue}
               />
             </div>
@@ -121,9 +107,9 @@ class SignInForm extends React.Component {
           </div>
           <AlertPanel
             alertType='warning'
-            additionalHtmlClasses='sign-in-form__errors'
             isShowing={error}
             displayText={error}
+            dismissable={false}
           />
         </React.Fragment>
       )

@@ -1,11 +1,19 @@
 .btn {
-  margin-top: 1rem;
   border-radius: 1.5625rem;
-  border-color: #FF6633;
-  background-color: #FF6633;
 
-  &:hover {
-    background-color: #C0501B;
-    border-color: #C0501B;
+  &--next, &--gamble {
+    margin-top: 1rem;
+    border-color: #FF6633;
+    background-color: #FF6633;
+
+    &:hover {
+      background-color: #C0501B;
+      border-color: #C0501B;
+    }
+  }
+
+  &--logout {
+    margin-left: 1rem;
+    margin-top: 0.3125rem;;
   }
 }
